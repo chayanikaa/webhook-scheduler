@@ -11,6 +11,7 @@ class RabbitMQReceiver {
 
     @RabbitListener(queues = [RabbitMQConfig.QUEUE_NAME])
     fun receive(message: String) {
+        println("Received message: $message")
         messages.add(message)
     }
 

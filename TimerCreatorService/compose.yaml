@@ -8,9 +8,15 @@ services:
     ports:
       - '27017'
   rabbitmq:
-    image: 'pivotalrabbitmq/rabbitmq-delayed-message-exchange:latest'
+    image: 'heidiks/rabbitmq-delayed-message-exchange:latest'
     environment:
       - 'RABBITMQ_DEFAULT_PASS=secret'
       - 'RABBITMQ_DEFAULT_USER=myuser'
     ports:
-      - '5672'
+      - "5672:5672"
+      - "15672:15672"
+#    environment:
+#      - 'RABBITMQ_DEFAULT_PASS=secret'
+#      - 'RABBITMQ_DEFAULT_USER=myuser'
+#    ports:
+#      - '5672'
