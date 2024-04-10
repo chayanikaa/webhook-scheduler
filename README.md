@@ -14,3 +14,5 @@
 - Retry mechanism: exponential backoff
 - Future: add some sort of scaling?
   - Maybe only do this in AWS
+- Move config and Timer DTO to a shared package
+- Dockerize the services
