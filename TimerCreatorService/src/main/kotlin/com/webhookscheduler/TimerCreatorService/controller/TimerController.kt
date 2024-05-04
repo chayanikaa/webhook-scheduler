@@ -1,7 +1,6 @@
 package com.webhookscheduler.TimerCreatorService.controller
 
 import com.webhookscheduler.TimerCreatorService.dto.TimerDTO
-import com.webhookscheduler.TimerCreatorService.service.RabbitMQReceiver
 import com.webhookscheduler.TimerCreatorService.service.RabbitMQSender
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
@@ -10,9 +9,9 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/v1/timers")
-class TimerController(private val rabbitMQSender: RabbitMQSender, private val rabbitMQReceiver: RabbitMQReceiver) {
+class TimerController(private val rabbitMQSender: RabbitMQSender) {
     @PostMapping
-    fun createTimer() {
+    fun createTimer(): TimerDTO {
         // create a timer with hours randomized between 0 and 59, minutes randomized between 0 and 59, seconds randomized between 0 and 59, and url set to http://localhost:8080/v1/greetings/World
 
         val timer = TimerDTO(
@@ -26,14 +25,8 @@ class TimerController(private val rabbitMQSender: RabbitMQSender, private val ra
 
         println("Timer created with delay: $delay")
 
-        rabbitMQSender.sendDelayed(timer.toString(), delay)
+        rabbitMQSender.sendDelayed(timer, delay)
+        return timer
 //        println("Timer created")
-    }
-
-    @GetMapping
-    fun getTimers(): List<String> {
-        val messages = rabbitMQReceiver.getMessages()
-        rabbitMQReceiver.clearMessages() // Clear the messages after retrieval
-        return messages
     }
 }

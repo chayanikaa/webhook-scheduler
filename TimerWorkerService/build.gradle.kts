@@ -21,8 +21,9 @@ repositories {
 dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-amqp")
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
-    implementation(project(mapOf("path" to ":")))
-	implementation(project(mapOf("path" to ":")))
+	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+//    implementation(project(mapOf("path" to ":")))
+//	implementation(project(mapOf("path" to ":")))
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("org.springframework.amqp:spring-rabbit-test")
 }

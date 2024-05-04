@@ -1,5 +1,6 @@
 package com.webhookscheduler.TimerCreatorService.service
 
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.webhookscheduler.TimerCreatorService.configuration.RabbitMQConfig
 import com.webhookscheduler.TimerCreatorService.dto.TimerDTO
 import org.springframework.amqp.core.Message
@@ -10,14 +11,13 @@ import org.springframework.stereotype.Service
 @Service
 class RabbitMQSender(private val rabbitTemplate: RabbitTemplate) {
 
-    fun send(timerString: String) {
-        rabbitTemplate.convertAndSend(RabbitMQConfig.QUEUE_NAME, timerString)
-    }
+    private val objectMapper = jacksonObjectMapper()
 
-    fun sendDelayed(message: String, delay: Int) {
+    fun sendDelayed(timer: TimerDTO, delay: Int) {
         val messageProperties = MessageProperties()
         messageProperties.setHeader("x-delay", delay)
-        val message = Message(message.toByteArray(), messageProperties)
+        val messageSerialized = objectMapper.writeValueAsString(timer)
+        val message = Message(messageSerialized.toByteArray(), messageProperties)
 
         rabbitTemplate.send("myDelayedExchange", "yourRoutingKey", message)
     }
