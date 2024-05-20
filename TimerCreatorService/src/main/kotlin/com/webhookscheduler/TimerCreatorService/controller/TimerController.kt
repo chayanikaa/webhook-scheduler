@@ -1,39 +1,42 @@
 package com.webhookscheduler.TimerCreatorService.controller
 
 import com.webhookscheduler.TimerCreatorService.dto.TimerDTO
-import com.webhookscheduler.TimerCreatorService.service.RabbitMQReceiver
+import com.webhookscheduler.TimerCreatorService.dto.TimerRecord
+import com.webhookscheduler.TimerCreatorService.repository.TimerRepository
 import com.webhookscheduler.TimerCreatorService.service.RabbitMQSender
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
+import java.time.Instant
 
 @RestController
 @RequestMapping("/v1/timers")
-class TimerController(private val rabbitMQSender: RabbitMQSender, private val rabbitMQReceiver: RabbitMQReceiver) {
+class TimerController(
+    private val rabbitMQSender: RabbitMQSender,
+    private val timerRepository: TimerRepository
+) {
     @PostMapping
     fun createTimer() {
-        // create a timer with hours randomized between 0 and 59, minutes randomized between 0 and 59, seconds randomized between 0 and 59, and url set to http://localhost:8080/v1/greetings/World
+        val randomSeconds = (0..59).random()
+        val timer = TimerDTO(0, 0, randomSeconds, "http://localhost:8080/v1/greetings/World")
 
-        val timer = TimerDTO(
-            0,
-            0,
-            (0..59).random(),
-            "http://localhost:8080/v1/greetings/World")
+        // calculate delay in milliseconds and set trigger time
+        val currentTime = Instant.now().toEpochMilli()
+        val delay = randomSeconds * 1000
+        val triggerTime = currentTime + delay
 
-        // calculate delay in milliseconds
-        val delay = (timer.hours * 3600 + timer.minutes * 60 + timer.seconds) * 1000
+        // Create and save TimerInfo
+        val timerInfo = TimerRecord(triggerTime.toString(), triggerTime, false)
+        timerRepository.save(timerInfo)
 
-        println("Timer created with delay: $delay")
+        println("Timer created with delay: $delay ms, firing at $triggerTime")
 
-        rabbitMQSender.sendDelayed(timer.toString(), delay)
-//        println("Timer created")
+        rabbitMQSender.sendDelayed(timer, delay)
     }
 
     @GetMapping
-    fun getTimers(): List<String> {
-        val messages = rabbitMQReceiver.getMessages()
-        rabbitMQReceiver.clearMessages() // Clear the messages after retrieval
-        return messages
+    fun getTimers(): List<TimerRecord> {
+        return timerRepository.findAll()
     }
 }
